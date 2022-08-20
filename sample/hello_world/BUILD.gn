@@ -1,0 +1,3 @@
+executable("hello_world") {
+  sources = [ "main.cc" ]
+}

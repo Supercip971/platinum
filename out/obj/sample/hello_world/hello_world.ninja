@@ -1,0 +1,18 @@
+defines =
+include_dirs =
+cflags = -pthread
+cflags_cc = -std=c++2b
+target_out_dir = obj/sample/hello_world
+target_output_name = hello_world
+
+build obj/sample/hello_world/hello_world.main.o: cxx ../sample/hello_world/main.cc
+  source_file_part = main.cc
+  source_name_part = main
+
+build hello_world: link obj/sample/hello_world/hello_world.main.o
+  ldflags = -Wl,-rpath=\$$ORIGIN/ -Wl,-rpath-link=
+  libs =
+  frameworks =
+  swiftmodules =
+  output_extension = 
+  output_dir = .

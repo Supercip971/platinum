@@ -1,0 +1,3 @@
+group("samples") {
+  deps = [ "//sample/hello_world" ]
+}

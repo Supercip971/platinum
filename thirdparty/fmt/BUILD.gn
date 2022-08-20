@@ -1,0 +1,4 @@
+config("fmt_config") {
+  defines = [ "" ]
+  include_dirs = [ "//third_party/something" ]
+}

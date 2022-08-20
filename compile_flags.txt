@@ -1,0 +1,9 @@
+-std=c++2b
+-D__brutal__
+-Wall
+-Wextra
+-Werror
+-Wnewline-eof
+-Wignored-attributes
+-Wunknown-attributes
+-Wimplicit-fallthrough
