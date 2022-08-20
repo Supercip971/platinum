@@ -1,10 +1,11 @@
 executable("hello_world") {
   sources = [ "main.cc" ]
-  deps = [ "//thirdparty/fmt" ]
-  defines = [
-    "PRIVATE",
-    "FMT_EXPORT",
-    "INTERFACE",
-    "FMT_SHARED",
+  deps = [
+    "//platinum/log:log",
+    "//thirdparty/fmt:fmt",
   ]
+
+  include_dirs = [ "//" ]
+
+  libs = [ "fmt" ]
 }

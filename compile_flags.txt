@@ -8,3 +8,5 @@
 -Wunknown-attributes
 -Wimplicit-fallthrough
 -Xc++
+-I./platinum
+-I.
