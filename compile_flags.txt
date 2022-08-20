@@ -7,3 +7,4 @@
 -Wignored-attributes
 -Wunknown-attributes
 -Wimplicit-fallthrough
+-Xc++

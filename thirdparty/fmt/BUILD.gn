@@ -1,4 +1,13 @@
-config("fmt_config") {
-  defines = [ "" ]
-  include_dirs = [ "//third_party/something" ]
+shared_library("fmt") {
+  sources = [
+    "fmt/src/format.cc",
+    "fmt/src/os.cc",
+  ]
+  include_dirs = [ "fmt/include" ]
+  defines = [
+    "PRIVATE",
+    "FMT_EXPORT",
+    "INTERFACE",
+    "FMT_SHARED",
+  ]
 }

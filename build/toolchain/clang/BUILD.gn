@@ -36,14 +36,12 @@ toolchain("clang") {
     #      os_specific_option = "-install_name @executable_path/$sofile"
     #      rspfile_content = "{{inputs}} {{solibs}} {{libs}}"
     #    } else {
-    os_specific_option = "-soname=$soname"
-    rspfile_content =
-        "--whole-archive {{inputs}} {{solibs}} --no-whole-archive {{libs}}"
+    os_specific_option = "-Wl,-soname=$soname"
+    rspfile_content = "-Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive {{libs}}"
 
     #    }
 
-    command =
-        "clang++ -shared {{ldflags}} -o $sofile $os_specific_option @$rspfile"
+    command = "clang++ -fPIC -shared {{ldflags}} -o $sofile $os_specific_option @$rspfile"
 
     description = "SOLINK $soname"
 

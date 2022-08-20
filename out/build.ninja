@@ -12,12 +12,16 @@ build build.ninja: gn
 subninja toolchain.ninja
 
 build samples: phony obj/samples.stamp
+build fmt: phony ./libfmt.so
 build $:samples: phony obj/samples.stamp
 build sample/hello_world$:hello_world: phony hello_world
 build sample/hello_world: phony hello_world
+build thirdparty/fmt$:fmt: phony ./libfmt.so
+build thirdparty/fmt: phony ./libfmt.so
 
 build all: phony $
     obj/samples.stamp $
-    hello_world
+    hello_world $
+    ./libfmt.so
 
 default all

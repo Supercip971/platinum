@@ -1,4 +1,4 @@
-defines =
+defines = -DPRIVATE -DFMT_EXPORT -DINTERFACE -DFMT_SHARED
 include_dirs =
 cflags = -pthread
 cflags_cc = -std=c++2b
@@ -9,7 +9,7 @@ build obj/sample/hello_world/hello_world.main.o: cxx ../sample/hello_world/main.
   source_file_part = main.cc
   source_name_part = main
 
-build hello_world: link obj/sample/hello_world/hello_world.main.o
+build hello_world: link obj/sample/hello_world/hello_world.main.o ./libfmt.so
   ldflags = -Wl,-rpath=\$$ORIGIN/ -Wl,-rpath-link=
   libs =
   frameworks =

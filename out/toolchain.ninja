@@ -12,10 +12,10 @@ rule link
   rspfile = ${target_output_name}${output_extension}.rsp
   rspfile_content = ${in}
 rule solink
-  command = clang++ -shared ${ldflags} -o ${output_dir}/${target_output_name}${output_extension} -soname=${target_output_name}${output_extension} @${target_output_name}${output_extension}.rsp
+  command = clang++ -fPIC -shared ${ldflags} -o ${output_dir}/${target_output_name}${output_extension} -Wl,-soname=${target_output_name}${output_extension} @${target_output_name}${output_extension}.rsp
   description = SOLINK ${target_output_name}${output_extension}
   rspfile = ${target_output_name}${output_extension}.rsp
-  rspfile_content = --whole-archive ${in} ${solibs} --no-whole-archive ${libs}
+  rspfile_content = -Wl,--whole-archive ${in} ${solibs} -Wl,--no-whole-archive ${libs}
 rule stamp
   command = touch ${out}
   description = STAMP ${out}
@@ -30,3 +30,4 @@ rule copy
 
 build obj/samples.stamp: stamp hello_world
 subninja obj/sample/hello_world/hello_world.ninja
+subninja obj/thirdparty/fmt/fmt.ninja

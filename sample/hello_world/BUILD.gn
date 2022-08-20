@@ -1,3 +1,10 @@
 executable("hello_world") {
   sources = [ "main.cc" ]
+  deps = [ "//thirdparty/fmt" ]
+  defines = [
+    "PRIVATE",
+    "FMT_EXPORT",
+    "INTERFACE",
+    "FMT_SHARED",
+  ]
 }
