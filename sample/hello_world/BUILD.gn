@@ -2,6 +2,7 @@ executable("hello_world") {
   sources = [ "main.cc" ]
   deps = [
     "//platinum/log:log",
+    "//platinum/utility:result",
     "//thirdparty/fmt:fmt",
   ]
 
