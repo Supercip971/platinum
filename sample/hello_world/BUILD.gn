@@ -1,12 +1,13 @@
 executable("hello_world") {
   sources = [ "main.cc" ]
   deps = [
+    "//platinum/gfx:gfx",
     "//platinum/log:log",
     "//platinum/utility:result",
-    "//thirdparty/fmt:fmt",
+    "//platinum/window:window",
   ]
 
   include_dirs = [ "//" ]
 
-  libs = [ "fmt" ]
+  configs += [ "//thirdparty/fmt:fmt-config" ]
 }
