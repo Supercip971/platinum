@@ -1,0 +1,3 @@
+config("fmt-config") {
+  libs = [ "fmt" ]
+}
