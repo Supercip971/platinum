@@ -1,3 +1,5 @@
 static_library("result") {
   sources = [ "result.hpp" ]
+  deps = [ "//platinum/log:log" ]
+  libs = [ "glfw" ]
 }

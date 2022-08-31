@@ -1,100 +1,105 @@
 #pragma once
 #include <optional>
 #include <platinum/log/log.hpp>
+#include <platinum/utility/trait.hpp>
 #include <variant>
-namespace plat
+namespace plt
 {
 
 struct EmptyRes
 {
 };
-template <typename T>
-struct Result
+template <class T = plt::EmptyRes>
+struct Result : public NoCopy
 {
-    std::variant<T, std::string> value;
+    std::variant<T, std::string> value = {};
 
-    Result(T value)
-        : value(value)
+    constexpr Result() : value()
     {
     }
 
-    Result(T &value)
-        : value(value)
+    constexpr Result(const T &val)
+        : value(val)
+    {
+    }
+    constexpr Result(T &&val)
+        : value(std::move(val))
     {
     }
 
-    Result(const std::string &error)
+    constexpr Result(const std::string &error)
+        : value(error)
+    {
+    }
+    constexpr Result(std::string &&error)
         : value(error)
     {
     }
 
-    Result(const Result &other)
-        : value(other.value)
+    constexpr Result(Result<T> &&other)
     {
+        std::swap(this->value, other.value);
     }
 
-    Result(Result<T> &&other)
-        : value(std::move(other.value))
+    constexpr Result &operator=(Result &&other)
     {
-    }
-
-    Result &operator=(const Result &other)
-    {
-        value = other.value;
+        std::swap(this->value, other.value);
         return *this;
     }
 
-    Result &operator=(Result &&other)
-    {
-        value = std::move(other.value);
-        return *this;
-    }
-
-    operator bool() const
+    constexpr operator bool() const
     {
         return std::holds_alternative<T>(value);
     }
 
-    T &unwrap()
+    void assert() const
     {
+        if (!operator bool())
+        {
+            fatal$("unable to assert success: {}", std::get<std::string>(value));
+        }
+    }
 
+    // warning: after unwrapping, the value is now invalid,
+    // you should not use a Result after unwrapping it
+    T &&unwrap()
+    {
         if (!std::holds_alternative<T>(value))
         {
             fatal$("trying to unwrap a Result that is not valid !\n - {}", std::get<std::string>(value));
         }
 
-        T &val = std::get<T>(value);
-        value = "already unwrapped";
-        return val;
+        T &&val = std::get<T>(std::move(value));
+        return std::move(val);
     }
 
-    const T &read() const
+    constexpr const T &read() const
     {
         return value.value();
     }
 
-    const std::string &read_error() const
+    constexpr std::string read_error() const
     {
         return std::get<std::string>(value);
     }
 
-    static Result<T> ok(T value)
+    static constexpr auto ok(const T &value)
     {
         return Result<T>(value);
     }
 
-    static Result<T> ok(T &value)
+    static constexpr auto ok(T &&value)
     {
-        return Result<T>(value);
+        return Result<T>(std::move(value));
     }
 
-    template <typename... S>
-    static Result<T> err(const char *fmt, S... args)
+    template <typename str, typename... S>
+    static Result<T> err(str fmt, const S... args)
     {
         return Result<T>(fmt::format(fmt, args...));
     }
 
-    static Result<T> err(const char *error)
+    static constexpr Result<T> err(const std::string &error)
     {
         return Result<T>(error);
     }
@@ -115,6 +120,17 @@ struct Result
     }
 };
 
+template <class T>
+Result<T> success(T &&val)
+{
+    return Result<T>::ok(std::move(val));
+}
+template <class T>
+Result<T> success(const T &val)
+{
+    return Result<T>::ok(val);
+}
+
 #define try$(expr) ({ auto _result = (expr); if (!_result) { return fmt::format("try failed: at {}:{}\n - {}", __FILE__, __LINE__, _result.read_error()); } _result.unwrap(); })
 
-}; // namespace plat
+}; // namespace plt
