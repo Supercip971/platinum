@@ -4,7 +4,7 @@
 #include <fmt/format.h>
 #include <iostream>
 #include <stdio.h>
-namespace plat
+namespace plt
 {
 struct Log
 {
@@ -59,10 +59,12 @@ public:
     }
 }; // namespace plat
 
-#define debug$(msg, ...) plat::Log::log(plat::Log::Level::Debug, __FILE__, __LINE__, FMT_STRING(msg), ##__VA_ARGS__)
-#define info$(msg, ...) plat::Log::log(plat::Log::Level::Info, __FILE__, __LINE__, FMT_STRING(msg), ##__VA_ARGS__)
-#define warn$(msg, ...) plat::Log::log(plat::Log::Level::Warn, __FILE__, __LINE__, FMT_STRING(msg), ##__VA_ARGS__)
-#define error$(msg, ...) plat::Log::log(plat::Log::Level::Error, __FILE__, __LINE__, FMT_STRING(msg), ##__VA_ARGS__)
-#define fatal$(msg, ...) plat::Log::log(plat::Log::Level::Fatal, __FILE__, __LINE__, FMT_STRING(msg), ##__VA_ARGS__)
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 
-}; // namespace plat
+#define debug$(msg, ...) plt::Log::log(plt::Log::Level::Debug, __FILENAME__, __LINE__, FMT_STRING(msg), ##__VA_ARGS__)
+#define info$(msg, ...) plt::Log::log(plt::Log::Level::Info, __FILENAME__, __LINE__, FMT_STRING(msg), ##__VA_ARGS__)
+#define warn$(msg, ...) plt::Log::log(plt::Log::Level::Warn, __FILENAME__, __LINE__, FMT_STRING(msg), ##__VA_ARGS__)
+#define error$(msg, ...) plt::Log::log(plt::Log::Level::Error, __FILENAME__, __LINE__, FMT_STRING(msg), ##__VA_ARGS__)
+#define fatal$(msg, ...) plt::Log::log(plt::Log::Level::Fatal, __FILENAME__, __LINE__, FMT_STRING(msg), ##__VA_ARGS__)
+
+}; // namespace plt

@@ -1,3 +1,4 @@
 static_library("log") {
   sources = [ "log.hpp" ]
+  configs += [ "//thirdparty/fmt:fmt-config" ]
 }
