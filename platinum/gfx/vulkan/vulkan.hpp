@@ -44,7 +44,13 @@ private:
     constexpr static bool enable_validation_layer = true;
     constexpr static int max_frames_in_flight = 2;
 
+    bool resized_framebuffer = false;
+
     Result<> initialize_ender_frames();
+
+    Result<> cleanup_swapchain();
+    Result<> recreate_swapchain();
+
     plt::VulkanDebug _debugger;
     std::unique_ptr<plt::Instance> _instance;
     std::unique_ptr<plt::PhysicalDevice> _pdevice;
@@ -60,11 +66,8 @@ private:
     std::unique_ptr<plt::GraphicPipeline> _gfx_pipeline;
     std::unique_ptr<plt::Framebuffers> _framebuffers;
     std::unique_ptr<plt::CommandPool> _command_pool;
-    std::unique_ptr<plt::CommandBuffer> _command_buffer;
-
-    std::unique_ptr<plt::Fence> _in_flight_fence;
-    std::unique_ptr<plt::Semaphore> _image_available_semaphore;
-    std::unique_ptr<plt::Semaphore> _render_finished_semaphore;
+    std::array<WorkingFrame, max_frames_in_flight> _working_frames;
+    uint32_t _current_frame;
 };
 
 } // namespace plt

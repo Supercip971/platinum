@@ -39,8 +39,9 @@ int main(int argc, char **argv)
     gfx->init(window).assert();
     while (!window.should_close())
     {
-        gfx->draw_frame().assert();
+
         window.update();
+        gfx->draw_frame().assert();
     }
     debug$("exiting");
     gfx->deinit();

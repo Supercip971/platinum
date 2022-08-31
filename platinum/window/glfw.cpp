@@ -121,7 +121,6 @@ Result<Window> Window::create(const char *title, int width, int height)
 {
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
     auto window = glfwCreateWindow(width, height, title, nullptr, nullptr);
     if (!window)
@@ -129,8 +128,7 @@ Result<Window> Window::create(const char *title, int width, int height)
         return Result<Window>::err("glfwCreateWindow failed");
     }
 
-
-    Window w ((void*)window);
+    Window w((void *)window);
     if (!_root.has_value())
     {
         w.set_root();

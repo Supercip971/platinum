@@ -76,11 +76,20 @@ void Swapchain::destroy()
     vkDestroySwapchainKHR(_device.handle(), _swapchain, nullptr);
 }
 
-Result<uint32_t> Swapchain::acquire_next_image(Semaphore &semaphore_on_complete)
+Result<Swapchain::ImageID> Swapchain::acquire_next_image(Semaphore &semaphore_on_complete)
 {
     uint32_t image_index;
-    vk_try$(vkAcquireNextImageKHR(_device.handle(), _swapchain, std::numeric_limits<uint64_t>::max(), semaphore_on_complete.handle(), VK_NULL_HANDLE, &image_index));
-    return Result<uint32_t>::ok(image_index);
+    VkResult result = (vkAcquireNextImageKHR(_device.handle(), _swapchain, std::numeric_limits<uint64_t>::max(), semaphore_on_complete.handle(), VK_NULL_HANDLE, &image_index));
+
+    if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR && result != VK_ERROR_OUT_OF_DATE_KHR)
+    {
+        vk_try$(result);
+    }
+
+    return success((Swapchain::ImageID){
+        .id = image_index,
+        .out_of_date_swapchain = result == VK_ERROR_OUT_OF_DATE_KHR,
+    });
 }
 
 Result<> Swapchain::create_image_view()
@@ -120,7 +129,7 @@ void Swapchain::destroy_image_view()
         vkDestroyImageView(_device.handle(), image_view, nullptr);
     }
 }
-void Swapchain::present(uint32_t image_index, Semaphore &signaled_semaphore)
+Result<Swapchain::ImageID> Swapchain::present(uint32_t image_index, Semaphore &signaled_semaphore)
 {
     VkPresentInfoKHR presentInfo{
         .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
@@ -130,6 +139,22 @@ void Swapchain::present(uint32_t image_index, Semaphore &signaled_semaphore)
         .pSwapchains = &_swapchain,
         .pImageIndices = &image_index,
     };
-    vkQueuePresentKHR(_device.present_queue(), &presentInfo);
+    VkResult result = vkQueuePresentKHR(_device.present_queue(), &presentInfo);
+
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+    {
+        return success((Swapchain::ImageID){
+            .id = image_index,
+            .out_of_date_swapchain = true,
+        });
+    }
+    else
+    {
+        vk_try$(result);
+    }
+    return success((Swapchain::ImageID){
+        .id = image_index,
+        .out_of_date_swapchain = false,
+    });
 }
 } // namespace plt

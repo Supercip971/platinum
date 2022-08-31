@@ -45,7 +45,7 @@ public:
 
     Result<> begin_command();
 
-    CommandBuffer &begin_render_pass(RenderPass &pass, Framebuffers &fb, int frame_id);
+    CommandBuffer &begin_render_pass(Swapchain &swapchain, RenderPass &pass, Framebuffers &fb, int frame_id);
 
     CommandBuffer &bind_pipeline(GraphicPipeline &pipeline)
     {
@@ -53,7 +53,7 @@ public:
         return *this;
     }
 
-    CommandBuffer &draw(uint32_t vertex_count, uint32_t instance_count = 1);
+    CommandBuffer &draw(Swapchain &swapchain, uint32_t vertex_count, uint32_t instance_count = 1);
     CommandBuffer &end_render_pass()
     {
         vkCmdEndRenderPass(_command_buffer);

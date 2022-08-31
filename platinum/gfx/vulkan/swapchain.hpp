@@ -33,9 +33,14 @@ public:
 
     VkSurfaceFormatKHR format() const { return _format; }
 
-    Result<uint32_t> acquire_next_image(Semaphore &semaphore_on_complete);
+    struct ImageID
+    {
+        uint32_t id;
+        bool out_of_date_swapchain;
+    };
+    Result<Swapchain::ImageID> acquire_next_image(Semaphore &semaphore_on_complete);
 
-    void present(uint32_t image_index, Semaphore &signaled_semaphore);
+    Result<Swapchain::ImageID> present(uint32_t image_index, Semaphore &signaled_semaphore);
 
 protected:
     const Device &_device;

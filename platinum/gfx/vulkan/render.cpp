@@ -24,6 +24,26 @@ Result<> VkGfx::initialize_ender_frames()
     return Result<>::ok({});
 }
 
+Result<> VkGfx::cleanup_swapchain()
+{
+    _framebuffers->destroy();
+    _swapchain->destroy_image_view();
+    _swapchain->destroy();
+    return Result<>::ok({});
+}
+
+Result<> VkGfx::recreate_swapchain()
+{
+    _device->wait_idle();
+
+    cleanup_swapchain();
+
+    _swapchain = try$(Swapchain::create(_pdevice->query_swapchain_support(*_surface), *_device, *_surface));
+    try$(_swapchain->create_image_view());
+    _framebuffers = try$(Framebuffers::create(*_device, *_swapchain, *_render_pass));
+
+    return Result<>::ok({});
+}
 Result<> VkGfx::init(Window &target_surface)
 {
 
@@ -76,16 +96,34 @@ Result<> VkGfx::init(Window &target_surface)
     // _in_flight_fence = try$(Fence::create(*_device));
     _current_frame = 0;
 
+    target_surface.add_callback(WindowCallbackType::WINDOW_CALLBACK_RESIZE, [&](Window &window, WindowCallback callback)
+                                {
+
+                                    while(window.width().unwrap() == 0 || window.height().unwrap() == 0)
+                                    {
+                                        window.update();
+                                    }
+
+                                    info$("Resizing window to: {}x{}", (window.width().unwrap()),  (window.height().unwrap()));
+        this->resized_framebuffer = true; });
     return Result<>::ok({});
 };
 Result<> VkGfx::draw_frame()
 {
-    _in_flight_fence->wait_forever();
-    _in_flight_fence->reset();
 
     auto &working_frame = _working_frames.at(_current_frame);
     working_frame.in_flight_fence->wait_forever();
+    auto image_d = try$(_swapchain->acquire_next_image(*working_frame.image_available_semaphore));
+
+    if (image_d.out_of_date_swapchain && resized_framebuffer)
+    {
+        this->recreate_swapchain();
+        return draw_frame();
+    }
+
     working_frame.in_flight_fence->reset();
+
+    uint32_t image = image_d.id;
 
     working_frame.command_buffer->reset();
 
@@ -103,11 +141,13 @@ Result<> VkGfx::draw_frame()
 
     working_frame.command_buffer->submit(*working_frame.image_available_semaphore, *working_frame.render_finished_semaphore, *working_frame.in_flight_fence);
 
-        _command_buffer->draw(3, 1);
+    auto r2 = _swapchain->present(image, *working_frame.render_finished_semaphore).unwrap();
 
-        _command_buffer->end_render_pass();
+    if (r2.out_of_date_swapchain || resized_framebuffer)
+    {
+        resized_framebuffer = false;
+        this->recreate_swapchain();
     }
-    _command_buffer->end_command();
 
     _current_frame = (_current_frame + 1) % max_frames_in_flight;
 
@@ -116,6 +156,8 @@ Result<> VkGfx::draw_frame()
 void VkGfx::deinit()
 {
     _device->wait_idle();
+
+    cleanup_swapchain();
     for (int i = 0; i < max_frames_in_flight; i++)
     {
 
@@ -127,17 +169,13 @@ void VkGfx::deinit()
         _working_frames[i].command_buffer->destroy();
     }
 
-    _command_buffer->destroy();
     _command_pool->destroy();
-    _framebuffers->destroy();
     _gfx_pipeline->destroy();
     _gfx_pipeline_layout->destroy();
     _render_pass->destroy();
     _default_fragment->destroy();
     _default_vertex->destroy();
 
-    _swapchain->destroy_image_view();
-    _swapchain->destroy();
     _device->destroy();
     _instance->destroy_surface(*_surface);
     _debugger.detach(*_instance);

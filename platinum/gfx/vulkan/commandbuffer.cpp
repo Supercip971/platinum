@@ -67,7 +67,7 @@ Result<> CommandBuffer::begin_command()
     return Result<>::ok({});
 }
 
-CommandBuffer &CommandBuffer::begin_render_pass(RenderPass &pass, Framebuffers &fb, int frame_id)
+CommandBuffer &CommandBuffer::begin_render_pass(Swapchain &swapchain, RenderPass &pass, Framebuffers &fb, int frame_id)
 {
     VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
 
@@ -77,7 +77,7 @@ CommandBuffer &CommandBuffer::begin_render_pass(RenderPass &pass, Framebuffers &
         .framebuffer = fb.handles()[frame_id],
         .renderArea = {
             .offset = {0, 0},
-            .extent = _swapchain.extent(),
+            .extent = swapchain.extent(),
         },
         .clearValueCount = 1,
         .pClearValues = &clearColor,
@@ -87,13 +87,13 @@ CommandBuffer &CommandBuffer::begin_render_pass(RenderPass &pass, Framebuffers &
     return *this;
 }
 
-CommandBuffer &CommandBuffer::draw(uint32_t vertex_count, uint32_t instance_count)
+CommandBuffer &CommandBuffer::draw(Swapchain &swapchain, uint32_t vertex_count, uint32_t instance_count)
 {
     VkViewport viewport{
         .x = 0.0f,
         .y = 0.0f,
-        .width = float(_swapchain.extent().width),
-        .height = float(_swapchain.extent().height),
+        .width = float(swapchain.extent().width),
+        .height = float(swapchain.extent().height),
         .minDepth = 0.0f,
         .maxDepth = 1.0f,
     };
@@ -101,7 +101,7 @@ CommandBuffer &CommandBuffer::draw(uint32_t vertex_count, uint32_t instance_coun
 
     VkRect2D scissor{
         .offset = {0, 0},
-        .extent = _swapchain.extent(),
+        .extent = swapchain.extent(),
     };
 
     vkCmdSetScissor(_command_buffer, 0, 1, &scissor);
