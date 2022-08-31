@@ -37,6 +37,7 @@ public:
     {
     }
     static Result<std::unique_ptr<CommandBuffer>> create(Device &device, Swapchain &swapchain, CommandPool &pool);
+    static Result<std::vector<std::unique_ptr<CommandBuffer>>> create_buffers(Device &device, Swapchain &swapchain, CommandPool &pool, int count);
 
     void destroy();
 

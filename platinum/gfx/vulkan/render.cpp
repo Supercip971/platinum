@@ -5,6 +5,25 @@
 
 namespace plt
 {
+Result<> VkGfx::initialize_ender_frames()
+{
+    std::vector<std::unique_ptr<CommandBuffer>> command_buffers =
+        try$(CommandBuffer::create_buffers(*_device, *_swapchain, *_command_pool, max_frames_in_flight));
+
+    std::vector<std::unique_ptr<Semaphore>> image_available_semaphores(max_frames_in_flight);
+    std::vector<std::unique_ptr<Semaphore>> render_finished_semaphores(max_frames_in_flight);
+    std::vector<std::unique_ptr<Fence>> in_flight_fences(max_frames_in_flight);
+
+    for (int i = 0; i < max_frames_in_flight; i++)
+    {
+        _working_frames[i].command_buffer = std::move(command_buffers[i]);
+        _working_frames[i].image_available_semaphore = try$(Semaphore::create(*_device));
+        _working_frames[i].render_finished_semaphore = try$(Semaphore::create(*_device));
+        _working_frames[i].in_flight_fence = try$(Fence::create(*_device));
+    }
+    return Result<>::ok({});
+}
+
 Result<> VkGfx::init(Window &target_surface)
 {
 
@@ -48,12 +67,14 @@ Result<> VkGfx::init(Window &target_surface)
     _framebuffers = try$(Framebuffers::create(*_device, *_swapchain, *_render_pass));
     _command_pool = try$(CommandPool::create(*_device, _device->index().graphicsFamily));
 
-    _command_buffer = try$(CommandBuffer::create(*_device, *_swapchain, *_command_pool));
+    this->initialize_ender_frames();
+    //_command_buffer = try$(CommandBuffer::create(*_device, *_swapchain, *_command_pool));
 
-    _image_available_semaphore = try$(Semaphore::create(*_device));
-    _render_finished_semaphore = try$(Semaphore::create(*_device));
+    // _image_available_semaphore = try$(Semaphore::create(*_device));
+    // _render_finished_semaphore = try$(Semaphore::create(*_device));
 
-    _in_flight_fence = try$(Fence::create(*_device));
+    // _in_flight_fence = try$(Fence::create(*_device));
+    _current_frame = 0;
 
     return Result<>::ok({});
 };
@@ -62,15 +83,25 @@ Result<> VkGfx::draw_frame()
     _in_flight_fence->wait_forever();
     _in_flight_fence->reset();
 
-    uint32_t image = try$(_swapchain->acquire_next_image(*_image_available_semaphore));
+    auto &working_frame = _working_frames.at(_current_frame);
+    working_frame.in_flight_fence->wait_forever();
+    working_frame.in_flight_fence->reset();
 
-    _command_buffer->reset();
+    working_frame.command_buffer->reset();
 
-    _command_buffer->begin_command();
+    working_frame.command_buffer->begin_command();
     {
-        _command_buffer->begin_render_pass(*_render_pass, *_framebuffers, image);
+        working_frame.command_buffer->begin_render_pass(*_swapchain, *_render_pass, *_framebuffers, image);
 
-        _command_buffer->bind_pipeline(*_gfx_pipeline);
+        working_frame.command_buffer->bind_pipeline(*_gfx_pipeline);
+
+        working_frame.command_buffer->draw(*_swapchain, 3, 1);
+
+        working_frame.command_buffer->end_render_pass();
+    }
+    working_frame.command_buffer->end_command();
+
+    working_frame.command_buffer->submit(*working_frame.image_available_semaphore, *working_frame.render_finished_semaphore, *working_frame.in_flight_fence);
 
         _command_buffer->draw(3, 1);
 
@@ -78,17 +109,23 @@ Result<> VkGfx::draw_frame()
     }
     _command_buffer->end_command();
 
-    _command_buffer->submit(*_image_available_semaphore, *_render_finished_semaphore, *_in_flight_fence);
-    _swapchain->present(image, *_render_finished_semaphore);
+    _current_frame = (_current_frame + 1) % max_frames_in_flight;
 
     return Result<>::ok({});
 }
 void VkGfx::deinit()
 {
     _device->wait_idle();
-    _in_flight_fence->destroy();
-    _image_available_semaphore->destroy();
-    _render_finished_semaphore->destroy();
+    for (int i = 0; i < max_frames_in_flight; i++)
+    {
+
+        _working_frames[i].in_flight_fence->destroy();
+
+        _working_frames[i].image_available_semaphore->destroy();
+        _working_frames[i].render_finished_semaphore->destroy();
+
+        _working_frames[i].command_buffer->destroy();
+    }
 
     _command_buffer->destroy();
     _command_pool->destroy();

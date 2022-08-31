@@ -24,17 +24,29 @@ void CommandPool::destroy()
 
 Result<std::unique_ptr<CommandBuffer>> CommandBuffer::create(Device &device, Swapchain &swapchain, CommandPool &pool)
 {
+    auto res = try$(CommandBuffer::create_buffers(device, swapchain, pool, 1));
+    return success(std::move(res.at(0)));
+}
+
+Result<std::vector<std::unique_ptr<CommandBuffer>>> CommandBuffer::create_buffers(Device &device, Swapchain &swapchain, CommandPool &pool, int count)
+{
+    std::vector<VkCommandBuffer> handles(count);
     VkCommandBufferAllocateInfo allocInfo{
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
         .commandPool = pool.handle(),
         .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-        .commandBufferCount = 1,
+        .commandBufferCount = uint32_t(handles.size()),
     };
-    VkCommandBuffer command_buffer;
 
-    vk_try$(vkAllocateCommandBuffers(device.handle(), &allocInfo, &command_buffer));
+    vk_try$(vkAllocateCommandBuffers(device.handle(), &allocInfo, handles.data()));
 
-    return success(std::make_unique<CommandBuffer>(command_buffer, device, swapchain, pool));
+    std::vector<std::unique_ptr<CommandBuffer>> command_buffers;
+    for (auto &handle : handles)
+    {
+        command_buffers.push_back(std::make_unique<CommandBuffer>(handle, device, swapchain, pool));
+    }
+
+    return success(std::move(command_buffers));
 }
 
 void CommandBuffer::destroy()

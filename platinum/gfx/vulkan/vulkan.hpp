@@ -24,6 +24,13 @@ namespace plt
 
 #define vk_try$(expr) try$(vk_try(expr))
 
+struct WorkingFrame
+{
+    std::unique_ptr<CommandBuffer> command_buffer;
+    std::unique_ptr<Semaphore> image_available_semaphore;
+    std::unique_ptr<Semaphore> render_finished_semaphore;
+    std::unique_ptr<Fence> in_flight_fence;
+};
 class VkGfx : public gfx
 {
 public:
@@ -35,6 +42,9 @@ public:
 
 private:
     constexpr static bool enable_validation_layer = true;
+    constexpr static int max_frames_in_flight = 2;
+
+    Result<> initialize_ender_frames();
     plt::VulkanDebug _debugger;
     std::unique_ptr<plt::Instance> _instance;
     std::unique_ptr<plt::PhysicalDevice> _pdevice;
