@@ -1,0 +1,38 @@
+static_library("gfx") {
+  sources = [
+    "render.hpp",
+    "vulkan/commandbuffer.cpp",
+    "vulkan/commandbuffer.hpp",
+    "vulkan/debug.cpp",
+    "vulkan/debug.hpp",
+    "vulkan/framebuffer.cpp",
+    "vulkan/framebuffer.hpp",
+    "vulkan/instance.cpp",
+    "vulkan/instance.hpp",
+    "vulkan/logical_device.cpp",
+    "vulkan/logical_device.hpp",
+    "vulkan/pass.cpp",
+    "vulkan/pass.hpp",
+    "vulkan/physical_device.cpp",
+    "vulkan/physical_device.hpp",
+    "vulkan/pipeline.cpp",
+    "vulkan/pipeline.hpp",
+    "vulkan/render.cpp",
+    "vulkan/shader.cpp",
+    "vulkan/shader.hpp",
+    "vulkan/surface.cpp",
+    "vulkan/surface.hpp",
+    "vulkan/swapchain.cpp",
+    "vulkan/swapchain.hpp",
+    "vulkan/swapchain_support.cpp",
+    "vulkan/swapchain_support.hpp",
+    "vulkan/sync.cpp",
+    "vulkan/sync.hpp",
+    "vulkan/vulkan.hpp",
+  ]
+  deps = [
+    "//platinum/shaders:shaders-fragment",
+    "//platinum/shaders:shaders-vertex",
+  ]
+  libs = [ "vulkan" ]
+}

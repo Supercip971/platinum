@@ -1,0 +1,30 @@
+import(gfx)
+import(shader)
+
+@shader.uniform = {
+    "u_resolution" = {
+        type = "vec2",
+    },
+    "u_time" = {
+        type = "float",
+    },
+    "u_tex" {
+        type = "sampler2D",
+    },
+};
+
+fn fun(v: int) -> int
+{
+    return v*2;
+}
+
+
+@linear
+fn main()
+{
+
+    vec2 res = shader.uniform["u_resolution"];
+
+}
+// il va s'étendre automatiquement, sans aucune stack
+fun(3);
