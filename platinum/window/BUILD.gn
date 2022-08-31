@@ -1,0 +1,19 @@
+static_library("window") {
+  sources = [
+    "input.hpp",
+    "window.hpp",
+  ]
+  if (true) {
+    sources += [
+      "glfw.cpp",
+      "glfw_callback.cpp",
+    ]
+  }
+
+  deps = [
+    "//platinum/log:log",
+    "//platinum/utility:result",
+  ]
+
+  include_dirs = [ "//" ]
+}
