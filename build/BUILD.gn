@@ -1,8 +1,22 @@
 config("compiler_defaults") {
   if (current_os == "linux") {
-    cflags = [ "-pthread" ]
-    cflags_cc = [ "-std=c++2b" ]
+    cflags = [
+      "-pthread",
+      "-g",
+    ]
+    cflags_cc = [
+      "-std=c++2b",
+      "-g",
+    ]
   }
+  defines = [
+    "PRIVATE",
+    "FMT_EXPORT",
+    "INTERFACE",
+    "FMT_SHARED",
+    "FMT_CONSTEVAL=constexpr",
+  ]
+  include_dirs = [ "//" ]
 }
 
 config("executable_ldconfig") {
